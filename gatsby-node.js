@@ -49,9 +49,24 @@ exports.createPages = ({ actions, createContentDigest, createNodeId, graphql }) 
       node: s.node, html
     })));
 
+    var deck_id = 0;
+    var i = 0;
+    var lastSlug = undefined;
     nodes.forEach(({ node, html }, index) => {
+      const slug = node.fileAbsolutePath.slice(-6,-3);
+      console.log(`slug: ${slug}`)
+
+      // need to reset index to 1 after slug changes
+      console.log(slug, lastSlug)
+      if (slug !== lastSlug && lastSlug !== undefined) {
+        console.log("RESET i")
+        i = 0
+        deck_id += 1 // update deck_id for index
+      }
+
+      console.log(`NODEID: ${node.id}`)
       createNode({
-        id: createNodeId(`${node.id}_${index + 1} >>> Slide`),
+        id: createNodeId(`${node.id}_${deck_id*1000 + i + 1} >>> Slide`),
         parent: node.id,
         children: [],
         internal: {
@@ -59,19 +74,46 @@ exports.createPages = ({ actions, createContentDigest, createNodeId, graphql }) 
           contentDigest: createContentDigest(html),
         },
         html: html,
-        index: index + 1,
+        index: deck_id*1000 + i + 1,
+        deck: deck_id
       });
+
+      i += 1;
+      lastSlug = slug;
     });
 
+
+    // creates the pages but the content is wrong
+    deck_id = 0;
+    i = 0;
+    lastSlug = undefined;
     nodes.forEach((slide, index) => {
+
+      // splice string .../paradigm.md ==> paradigm
+      const slug = slide.node.fileAbsolutePath.slice(-6,-3)
+      console.log(`slug: ${slug}`)
+
+      // need to reset index to 1 after slug changes
+      console.log(slug, lastSlug)
+      if (slug !== lastSlug && lastSlug !== undefined) {
+        console.log("RESET i")
+        i = 0
+        deck_id += 1
+      }
+      
+
       createPage({
-        path: `/${index + 1}`,
+        path: `/${slug}/${i + 1}`,
         component: slideTemplate,
         context: {
-          index: index + 1,
-          absolutePath: process.cwd() + `/src/slides#${index + 1}`,
+          index: deck_id*1000 + i + 1,
+          absolutePath: process.cwd() + `/src/slides#${deck_id*1000 + i + 1}`,
+          deck: deck_id
         },
       });
+
+      i += 1;
+      lastSlug = slug;
     });
   });
 };
@@ -81,6 +123,7 @@ exports.sourceNodes = ({ actions }) => {
     type Slide implements Node {
       html: String
       index: Int
+      deck: Int
     }
   `);
 };

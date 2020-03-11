@@ -9,7 +9,7 @@ import './index.css';
 
 const Header = ({ name, title, date }) => (
   <header>
-    <Link to="/1">
+    <Link to="/000/1">
       <span>{name}</span> — {title}
     </Link>
     <time>{date}</time>
@@ -30,17 +30,20 @@ class TemplateWrapper extends Component {
 
   navigate = ({ keyCode }) => {
     const now = this.props.data.slide.index;
+    const deck = this.props.data.slide.deck;
     const slidesLength = this.props.slidesLength;
 
+    // need to also include deck_id in the navigate function
     if (now) {
       if (keyCode === this.PREV && now === 1) {
         return false;
-      } else if (this.NEXT.indexOf(keyCode) !== -1 && now === slidesLength) {
+      } else if (this.NEXT.indexOf(keyCode) !== -1 && now === slidesLength) { // need new check
         return false;
       } else if (this.NEXT.indexOf(keyCode) !== -1) {
-        navigate(`/${now + 1}`);
+        // check also if indexOf(keyCode) is <= max length of deck
+        navigate(`/00${deck}/${now-deck*1000 + 1}`);
       } else if (keyCode === this.PREV) {
-        navigate(`/${now - 1}`);
+        navigate(`/00${deck}/${now-deck*1000 - 1}`);
       }
     }
   };
